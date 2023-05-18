@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -78,9 +79,11 @@ internal fun ShowkaseBrowserApp(
     val lifecycleOwner = LocalLifecycleOwner.current
     val backPressedDispatcherOwner = remember {
         object : OnBackPressedDispatcherOwner {
-            override fun getLifecycle() = lifecycleOwner.lifecycle
+            override val lifecycle: Lifecycle
+                get() = lifecycleOwner.lifecycle
+            override val onBackPressedDispatcher: OnBackPressedDispatcher
+                get() = OnBackPressedDispatcher()
 
-            override fun getOnBackPressedDispatcher() = OnBackPressedDispatcher()
         }
     }
     CompositionLocalProvider(
@@ -238,21 +241,27 @@ private fun AppBarTitle(
         currentRoute == ShowkaseCurrentScreen.SHOWKASE_CATEGORIES.name -> {
             ToolbarTitle(context.getString(R.string.showkase_title), modifier)
         }
+
         currentRoute == ShowkaseCurrentScreen.COMPONENT_GROUPS.name -> {
             ToolbarTitle(context.getString(R.string.components_category), modifier)
         }
+
         currentRoute == ShowkaseCurrentScreen.COLOR_GROUPS.name -> {
             ToolbarTitle(context.getString(R.string.colors_category), modifier)
         }
+
         currentRoute == ShowkaseCurrentScreen.TYPOGRAPHY_GROUPS.name -> {
             ToolbarTitle(context.getString(R.string.typography_category), modifier)
         }
+
         currentRoute.insideGroup() -> {
             ToolbarTitle(currentGroup ?: "currentGroup", modifier)
         }
+
         currentRoute == ShowkaseCurrentScreen.COMPONENT_STYLES.name -> {
             ToolbarTitle(currentComponentName.orEmpty(), modifier)
         }
+
         currentRoute == ShowkaseCurrentScreen.COMPONENT_DETAIL.name -> {
             val styleName = currentComponentStyleName?.let { "[$it]" }.orEmpty()
             ToolbarTitle(
@@ -346,9 +355,11 @@ private fun ShowkaseAppBarActions(
     when {
         metadata.value.isSearchActive -> {
         }
+
         currentRoute == ShowkaseCurrentScreen.COMPONENT_DETAIL.name ||
                 currentRoute == ShowkaseCurrentScreen.SHOWKASE_CATEGORIES.name -> {
         }
+
         else -> {
             IconButton(
                 modifier = modifier.testTag("SearchIcon"),
@@ -397,10 +408,13 @@ private fun startDestination(
 ) = when {
     groupedComponentMap.isOnlyCategory(groupedColorsMap, groupedTypographyMap) ->
         ShowkaseCurrentScreen.COMPONENT_GROUPS.name
+
     groupedColorsMap.isOnlyCategory(groupedTypographyMap, groupedComponentMap) ->
         ShowkaseCurrentScreen.COLOR_GROUPS.name
+
     groupedTypographyMap.isOnlyCategory(groupedColorsMap, groupedComponentMap) ->
         ShowkaseCurrentScreen.TYPOGRAPHY_GROUPS.name
+
     else ->
         ShowkaseCurrentScreen.SHOWKASE_CATEGORIES.name
 }
@@ -414,10 +428,13 @@ private fun NavGraphBuilder.navGraph(
 ) = when {
     groupedComponentMap.isOnlyCategory(groupedColorsMap, groupedTypographyMap) ->
         componentsNavGraph(navController, groupedComponentMap, showkaseBrowserScreenMetadata)
+
     groupedColorsMap.isOnlyCategory(groupedTypographyMap, groupedComponentMap) ->
         colorsNavGraph(navController, groupedColorsMap, showkaseBrowserScreenMetadata)
+
     groupedTypographyMap.isOnlyCategory(groupedColorsMap, groupedComponentMap) ->
         typographyNavGraph(navController, groupedTypographyMap, showkaseBrowserScreenMetadata)
+
     else ->
         fullNavGraph(
             navController,
